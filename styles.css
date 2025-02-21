@@ -1,0 +1,259 @@
+/* General Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+  padding: 20px;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #333;
+}
+
+h4 {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+/* Search Container */
+.search-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+/* Dropdown Styling */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-button {
+  padding: 8px 16px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dropdown-button:hover {
+  background: #0056b3;
+}
+
+.dropdown-content {
+  display: none; /* Hidden by default */
+  position: absolute;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  padding: 8px;
+  min-width: 200px;
+}
+
+.dropdown-content label {
+  display: block;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.dropdown-content label:hover {
+  background: #f0f0f0;
+}
+
+.dropdown-content input {
+  margin-right: 8px;
+}
+
+/* Show dropdown content when active */
+.dropdown.active .dropdown-content {
+  display: block;
+}
+
+/* Search Input Container */
+.search-input-container {
+  position: relative;
+  flex-grow: 1;
+}
+
+#search-query {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.clear-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #999;
+  font-size: 18px;
+}
+
+.clear-icon:hover {
+  color: #333;
+}
+
+.suggestions-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  display: none;
+}
+
+.suggestions-dropdown div {
+  padding: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.suggestions-dropdown div:hover {
+  background: #f0f0f0;
+}
+
+.suggestion.highlighted {
+  background-color: #f0f0f0; /* Highlight color */
+}
+
+#search-button {
+  padding: 8px 16px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#search-button:hover {
+  background: #0056b3;
+}
+
+/* Popular Searches */
+.popular-searches {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.badge {
+  padding: 6px 12px;
+  background: #e9ecef;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 11px;
+  color: #333;
+}
+
+.badge:hover {
+  background: #dee2e6;
+}
+
+/* Search Results */
+.search-results {
+  margin-bottom: 20px;
+}
+
+/* Card Styling */
+.card {
+  padding: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  background: white;
+}
+
+.card p {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Table Styling */
+.result-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.result-table th,
+.result-table td {
+  padding: 8px;
+  border: 1px solid #ccc;
+  text-align: left;
+}
+
+.result-table th {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+.result-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.highlight {
+  background: yellow;
+  font-weight: bold;
+}
+
+/* Show More Button */
+.show-more-button {
+  display: block;
+  margin: 10px auto;
+  padding: 8px 16px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.show-more-button:hover {
+  background: #0056b3;
+}
+
+/* Mandatory Input Highlight */
+#search-query.mandatory {
+  border: 2px solid red;
+}
+
+/* Error Message */
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: 10px;
+}

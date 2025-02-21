@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Source Search Component</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Application Title -->
+    <h2>Multi-Source Search Component</h2>
+
+    <!-- Search Container -->
+    <div class="search-container">
+      <!-- Multi-Select Dropdown for Data Sources -->
+      <div class="dropdown">
+        <button class="dropdown-button">Select Data Sources</button>
+        <div class="dropdown-content"></div> <!-- Dropdown options will be populated dynamically -->
+      </div>
+
+      <!-- Search Input and Clear Button -->
+      <div class="search-input-container">
+        <input type="text" id="search-query" placeholder="Search..." />
+        <span id="clear-search" class="clear-icon">×</span> <!-- Clear search input -->
+        <div id="suggestions" class="suggestions-dropdown"></div> <!-- Suggestions dropdown -->
+      </div>
+
+      <!-- Search Button -->
+      <button id="search-button">🔍</button>
+    </div>
+
+    <!-- Frequent Searches Section -->
+    <h4>Frequent Searches</h4>
+    <div id="popular-searches" class="popular-searches"></div> <!-- Frequent searches badges -->
+
+    <!-- Search Results Section -->
+    <div id="search-results" class="search-results"></div> <!-- Search results will be displayed here -->
+  </div>
+
+  <!-- Include JavaScript -->
+  <script type="module" src="script.js"></script>
+</body>
+</html>
