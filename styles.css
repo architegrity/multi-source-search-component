@@ -20,6 +20,16 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Style for ID links */
+a {
+  color: #007bff; /* Match the theme color */
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
 h2 {
   text-align: center;
   margin-bottom: 20px;
@@ -256,4 +266,21 @@ h4 {
   color: red;
   font-size: 14px;
   margin-top: 10px;
+}
+
+/* Icon styling */
+.fas {
+  margin-right: 8px;
+  color: #007bff; /* Match the theme color */
+}
+
+/* Suggestions dropdown icons */
+.suggestion i {
+  margin-right: 8px;
+}
+
+/* Results section icons */
+.card i,
+.result-table th i {
+  margin-right: 8px;
 }

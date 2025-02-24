@@ -77,23 +77,21 @@ const dataSources = {
         customer: "PharmaTech",
         samples: ["SMP-12345"]
       },
-      // Removed ORD-1005 (MediGen) because MediGen owns no equipment and cannot place an order
-      // Removed ORD-1006 (BioPharma Inc.) because BioPharma Inc. owns no equipment and cannot place an order
+
       {
         id: "ORD-1007",
         name: "Order - GenomeX Data Services Samples",
         contract: "CTR-2024-0080",
         customer: "GenomeX",
-        samples: ["SMP-98765"] // GenomeX owns EQP-7789, which is associated with SMP-98765
+        samples: ["SMP-98765"] 
       },
-      // Removed ORD-1008 (CellTech) because CellTech owns no equipment and cannot place an order
-      // Removed ORD-1009 (NanoBio) because NanoBio owns no equipment and cannot place an order
+      
       {
         id: "ORD-1010",
         name: "Order - LabTech Additional Samples",
         contract: "CTR-2024-0012",
         customer: "LabTech Solutions",
-        samples: ["SMP-67234"] // LabTech Solutions owns EQP-4590, which is associated with SMP-67234
+        samples: ["SMP-67234"]
       }
     ]
   };

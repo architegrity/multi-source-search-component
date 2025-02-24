@@ -1,5 +1,7 @@
 // script.js
 import { config, popularSearches } from './config.js'; // Import the config and popularSearches
+import { cardTemplate } from './templates/cardTemplate.js'; // Import the card template
+import { tableTemplate } from './templates/tableTemplate.js'; // Import the table template
 
 // Application state
 let selectedSources = ["All Data Sources"]; // Default to "All Data Sources"
@@ -87,12 +89,13 @@ function initializePopularSearches() {
 initializePopularSearches();
 
 // Populate dropdown options
+// Populate dropdown options with icons
 dropdownContent.innerHTML = `
-  <label><input type="checkbox" value="All Data Sources" checked> All Data Sources</label>
+  <label><input type="checkbox" value="All Data Sources" checked> <i class="fas fa-layer-group"></i> All Data Sources</label>
   ${config.categories
     .map(
       (category) => `
-    <label><input type="checkbox" value="${category.name}"> ${category.name}</label>
+    <label><input type="checkbox" value="${category.name}"> <i class="${category.icon}"></i> ${category.name}</label>
   `
     )
     .join("")}
@@ -151,15 +154,27 @@ searchQueryInput.addEventListener("input", (e) => {
     // Generate suggestions from selected categories
     suggestions = config.categories
       .filter((category) => selectedSources.includes(category.name) || selectedSources.includes("All Data Sources"))
-      .flatMap((category) => category.dataSource) // Flatten all data sources into a single array
-      .map((item) => ({
-        ...item,
-        score: calculateScore(item, searchQuery), // Calculate score for each item
-      }))
-      .filter((item) => item.score > 0) // Filter out items with no match
-      .sort((a, b) => b.score - a.score) // Sort by score in descending order
-      .slice(0, 5) // Limit to 5 suggestions
-      .map((item) => item); // Remove the score property from the final suggestions
+      .flatMap((category) => {
+        // Apply maxSuggestions limit per category
+        return category.dataSource
+          .map((item) => ({
+            ...item,
+            score: calculateScore(item, searchQuery), // Calculate score for each item
+            category: category.name, // Add category name for filtering
+            order: category.order // Add category order for sorting
+          }))
+          .filter((item) => item.score > 0) // Filter out items with no match
+          .sort((a, b) => b.score - a.score) // Sort by score in descending order
+          .slice(0, category.maxSuggestions); // Apply per-category maxSuggestions limit
+      })
+      .sort((a, b) => {
+        // Sort by order first, then by score
+        if (a.order !== -1 && b.order !== -1) {
+          return a.order - b.order; // Lower order numbers come first
+        }
+        return b.score - a.score; // Fallback to score if order is -1
+      })
+      .slice(0, 10); // Global limit for total suggestions (optional)
 
     renderSuggestions();
   } else {
@@ -298,16 +313,33 @@ function handleSearch() {
 }
 
 /**
+ * Format the suggestion label using the template and item fields.
+ * @param {string} template - The label template (e.g., "${id} - ${name}").
+ * @param {object} item - The item containing the fields.
+ * @returns {string} - The formatted label.
+ */
+ function formatSuggestionLabel(template, item) {
+  return template.replace(/\${(.*?)}/g, (match, field) => item[field] || "");
+}
+
+/**
  * Render the suggestions dropdown.
  */
  function renderSuggestions() {
   suggestionsDropdown.innerHTML = suggestions
     .map(
-      (item, index) => `
-      <div class="suggestion ${index === highlightedSuggestionIndex ? "highlighted" : ""}" data-suggestion="${item.name}">
-        <strong>${highlightText(item.id, searchQuery)}</strong> - ${highlightText(item.name, searchQuery)}
-      </div>
-    `
+      (item, index) => {
+        const category = config.categories.find((cat) => cat.name === item.category);
+        const labelTemplate = category?.suggestionLabel || "${id} - ${name}"; // Default template
+        const label = formatSuggestionLabel(labelTemplate, item);
+
+        return `
+          <div class="suggestion ${index === highlightedSuggestionIndex ? "highlighted" : ""}" data-suggestion="${item.name}">
+            <i class="${category?.icon || "fas fa-question"}"></i>
+            ${highlightText(label, searchQuery)}
+          </div>
+        `;
+      }
     )
     .join("");
   suggestionsDropdown.style.display = suggestions.length > 0 ? "block" : "none";
@@ -349,19 +381,29 @@ function selectSuggestion(term) {
     return;
   }
 
-  searchResultsContainer.innerHTML = Object.entries(results)
-    .filter(([key, items]) => items.length > 0) // Filter out empty categories
-    .map(([key, items]) => {
-      const category = config.categories.find((cat) => cat.name === key);
-      const fields = category ? category.fields : [];
-      const displayedItems = items.slice(0, config.maxResultsPerCategory); // Limit the number of results
+  // Sort categories by order before rendering results
+  const sortedCategories = config.categories
+    .filter((category) => results[category.name] && results[category.name].length > 0)
+    .sort((a, b) => {
+      if (a.order !== -1 && b.order !== -1) {
+        return a.order - b.order; // Lower order numbers come first
+      }
+      return 0; // If order is -1, maintain original order
+    });
+
+  searchResultsContainer.innerHTML = sortedCategories
+    .map((category) => {
+      const items = results[category.name];
+      const fields = category.fields;
+      const maxResults = category.maxResults; // Use per-category maxResults
+      const displayedItems = items.slice(0, maxResults); // Limit the number of results
       const remainingItems = items.length - displayedItems.length; // Calculate remaining items
 
       // Choose the template based on the displayFormat configuration
       if (config.displayFormat === "table") {
-        return tableTemplate(key, displayedItems, fields, searchQuery, remainingItems);
+        return tableTemplate(category.name, displayedItems, fields, searchQuery, remainingItems, category.showMoreUrl, category.detailsUrl);
       } else {
-        return cardTemplate(key, displayedItems, fields, searchQuery, remainingItems);
+        return cardTemplate(category.name, displayedItems, fields, searchQuery, remainingItems, category.showMoreUrl, category.detailsUrl);
       }
     })
     .join("");
@@ -371,21 +413,12 @@ function selectSuggestion(term) {
   showMoreButtons.forEach((button) => {
     button.addEventListener("click", (e) => {
       const category = e.target.dataset.category;
-      const allItems = results[category];
-      const currentDisplayedCount = e.target.dataset.displayedCount
-        ? parseInt(e.target.dataset.displayedCount)
-        : config.maxResultsPerCategory;
+      const showMoreUrl = config.categories.find((cat) => cat.name === category)?.showMoreUrl;
 
-      // Calculate how many more items to show (double the current count or show all)
-      const newDisplayedCount = Math.min(currentDisplayedCount * 2, allItems.length);
-      const displayedItems = allItems.slice(0, newDisplayedCount);
-      const remainingItems = allItems.length - newDisplayedCount;
-
-      // Re-render the results for this category with more items
-      const categoryElement = e.target.closest("div");
-      categoryElement.innerHTML = config.displayFormat === "table"
-        ? tableTemplate(category, displayedItems, config.categories.find((cat) => cat.name === category).fields, searchQuery, remainingItems)
-        : cardTemplate(category, displayedItems, config.categories.find((cat) => cat.name === category).fields, searchQuery, remainingItems);
+      if (showMoreUrl) {
+        // Navigate to the "Show More" URL with the search query as a parameter
+        window.location.href = `${showMoreUrl}?q=${encodeURIComponent(searchQuery)}`;
+      }
     });
   });
 }
@@ -436,83 +469,4 @@ function highlightText(text, query) {
   if (!query) return text;
   const regex = new RegExp(`(${query})`, "gi");
   return text.replace(regex, "<span class='highlight'>$1</span>");
-}
-
-/**
- * Template for displaying results in card format.
- */
- function cardTemplate(key, items, fields, searchQuery, remainingItems) {
-  return `
-    <div>
-      <h3>${key}</h3>
-      ${items
-        .map(
-          (item) => `
-          <div class="card">
-            ${fields
-              .map((field) => {
-                const value = item[field];
-                if (Array.isArray(value)) {
-                  return `<p><strong>${field}:</strong> ${highlightText(value.join(", "), searchQuery)}</p>`;
-                } else if (value) {
-                  return `<p><strong>${field}:</strong> ${highlightText(value, searchQuery)}</p>`;
-                }
-                return "";
-              })
-              .join("")}
-          </div>
-        `
-        )
-        .join("")}
-      ${remainingItems > 0
-        ? `<button class="show-more-button" data-category="${key}" data-displayed-count="${items.length}">
-             Show More (${remainingItems} remaining)
-           </button>`
-        : ""}
-    </div>
-  `;
-}
-
-/**
- * Template for displaying results in table format.
- */
- function tableTemplate(key, items, fields, searchQuery, remainingItems) {
-  return `
-    <div>
-      <h3>${key}</h3>
-      <table class="result-table">
-        <thead>
-          <tr>
-            ${fields.map((field) => `<th>${field}</th>`).join("")}
-          </tr>
-        </thead>
-        <tbody>
-          ${items
-            .map(
-              (item) => `
-              <tr>
-                ${fields
-                  .map((field) => {
-                    const value = item[field];
-                    if (Array.isArray(value)) {
-                      return `<td>${highlightText(value.join(", "), searchQuery)}</td>`;
-                    } else if (value) {
-                      return `<td>${highlightText(value, searchQuery)}</td>`;
-                    }
-                    return `<td></td>`;
-                  })
-                  .join("")}
-              </tr>
-            `
-            )
-            .join("")}
-        </tbody>
-      </table>
-      ${remainingItems > 0
-        ? `<button class="show-more-button" data-category="${key}" data-displayed-count="${items.length}">
-             Show More (${remainingItems} remaining)
-           </button>`
-        : ""}
-    </div>
-  `;
 }
